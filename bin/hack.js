@@ -1,5 +1,5 @@
 /**
- * Run main hacking routine
+ * hack.js - Run main hacking routine
  * ==============================================
  * Attempt to gain access to a server and run the
  * main early-hack-template.script.
@@ -15,12 +15,20 @@
  * 
  */
 
-import * as hackInterface from '/bin/hackInterface.js';
-import * as messages from '/bin/messages.js';
+import * as appInterface from './bin/appInterface.js';
+import * as messages from './bin/messages.js';
+import * as search from './bin/search';
 
+/**
+ * Hack remote server and run script
+ * 
+ * @param {*} server 
+ * @param {*} ns 
+ * @returns 
+ */
 export async function run(server, ns) {
 
-    let script 			= hackInterface.getServerPattern(),
+    let script 			= appInterface.getScript(),
         serverRam 		= ns.getServerMaxRam(server),
         scriptRam 		= ns.getScriptRam(script),
         requiredPorts 	= ns.getServerNumPortsRequired(server),		
@@ -85,7 +93,16 @@ export async function run(server, ns) {
                 throw('Failed to NUKE.exe (ports: ' + ports + '/' + requiredPorts + ')');
             }
 
+            /**
+             * TODO: Try and hack the server running the script from the local host
+             * if no threads 
+             *   run scripts locally 
+             * else 
+             *   run scripts on the remote
+             * endif
+             */            
             await ns.exec(script, server, threads);
+
             await ns.tprint('Successfully hacked ' + server + ' using ' + threads + ' threads');
             messages.availableMoney(ns, server);
 
@@ -99,9 +116,53 @@ export async function run(server, ns) {
     }
 
 }
- 
- 
+
+/**
+ * Try BruteSHH on all servers and open ports
+ * 
+ * @param {*} ns 
+ */
+export async function gainAccess(ns){
+    let servers = await search.main(ns);
+
+    for( let i = 0; i < servers.length; i++ ) {
+
+        let server = servers[i], ports = 0;
+
+        if(ns.fileExists('BruteSSH.exe')){
+            if(await ns.brutessh(server)){
+                ns.tprint('SUCCESS: Gained root access to: ' + servers[i]);
+                ports++;
+            };    
+        } 
+        if(ns.fileExists('FTPCrack.exe')){
+            if(await ns.ftpcrack(server)){
+                ports++;
+            }
+        } 
+        if(ns.fileExists('HTTPWorm.exe')){
+            if(await ns.httpworm(server)){
+                ports++;
+            }            
+        }
+        if(ns.fileExists('relaySMTP.exe')){
+            if(await ns.relaysmtp(server)){
+                ports++;
+            }            
+        }
+        if(ns.fileExists('SQLInject.exe')){
+            if(await ns.sqlinject(server)){
+                ports++;
+            }        
+        }
+        
+        ns.tprint('OPENED: ' + ports + ' ports for ' + server);
+
+    }
+    
+}
+
+
 /** @param {NS} ns **/
 export async function main(ns) {
-
 }

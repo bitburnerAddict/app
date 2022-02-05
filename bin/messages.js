@@ -20,20 +20,4 @@ export async function availableMoney(ns, server) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
-
-	//let list = ns.ls('home');
-	// messages = [];
-	// console.log("Messages");
-
-	// list.forEach((file) => {
-	// 	if(file.search('.msg') > 0){
-	// 		console.log(file);
-	// 		messages.push(file);
-	// 	}
-	// });
-
-	// messages.forEach((message) => {
-	// 	console.log(ns.read(message));
-	// })
-
 }

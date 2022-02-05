@@ -6,7 +6,7 @@
  *  
  */
 
-async function search(array, ns) {	
+export async function search(array, ns) {	
 
 	let unique = [], 
 		uniqueNodes = [];

@@ -1,50 +1,67 @@
 /**
  * app.js - Main Application
  * ==============================================
- * Initialise the app by hacking all servers
- * on the network, and purchased servers. 
- * 
- * Follow up by attempting to purchase as many 
- * servers as possible
- * 
+ * Choose from the following options:
+ * 1. report
+ * 2. hack
+ * 3. stop
+ * 4. start
+ * 5. create
+ * 6. purchase
  * 
  * TODO's
  * ======
  * 
- * 1. Write script to connect to darkweb and purchase programs
- * 2. Write script to check factions 
- * 3. Add hacking level checks to scripts with output
- * 4. Look at making the hacking script dynamic so that you 
- *    can target multiple servers at the same time
+ * 1. Have specific options for early game
+ *    a. Notes of hacking level required (50?)
+ * 	  b. Notes to buy TOR Router
+ *    c. Increase hacking level reminder
  * 
- *    For this, use the 'write' function, consider loading
- *    a template file and combining it with the dynamic
- *    server name
+ * 2. Write filemanager.js - for adding and removing remote files
+ * 3. Once filemanger.js is complete, write function to 
+ * 	  a. kill scripts
+ *    b. remove script
+ *    c. add new script
+ *    d. run new script
  * 
- * 5. Write script to monitor money on servers, is it going 
- *    down? What happens if you hack different servers?
- * 6. Make sure all the messages are in messages.js
+ * 4. Create a function for running script locally to use 
+ *    all local resources to attack a server
+ * 5. Reminder how to increase local processing power - MAX OUT 
  *  
  */
 
 // Imports
-import * as servers from '/bin/servers.js';
+import * as report from './bin/report';
+import * as hack from './bin/hack'
+import * as pm from './bin/pm';
+import * as generator from './bin/generator';
+import * as servers from './bin/servers';
 
 /** @param {NS} ns **/
 export async function main(ns) {
 	
-	//await servers.getTargetServer(ns);
-	await servers.hackServers(ns);
-	await servers.purchaseServers(ns);
-
-	let bestEfficency = await servers.getEfficency(ns, 'The-Cave', 0);
-	console.log('The-Cave hack efficency: ' + bestEfficency[1]);
-	console.log('The-Cave total money: ' + bestEfficency[2]);
-	console.log('The-Cave total time: ' + bestEfficency[3]);
-
-	let noodlesEfficency = await servers.getEfficency(ns, 'n00dles', 0);
-	console.log('n00dles hack efficency: ' + noodlesEfficency[1]);
-	console.log('n00dles total money: ' + noodlesEfficency[2]);
-	console.log('n00dles total time: ' + noodlesEfficency[3]);
+	switch(ns.args[0]){
+		case "report":
+			await report.main(ns);
+			break;
+		case "hack":
+			await hack.gainAccess(ns);
+			break;
+		case "stop":
+			await pm.stop(ns);
+			break;	
+		case "start":
+			await pm.start(ns);
+			break;
+		case "create":
+			await generator.hackScript(ns, 'n00dles');
+			break;			
+		case "purchase":			
+			await servers.purchaseServers(ns);
+			break;
+		default:
+			console.log('Default');
+			break;
+	}
 	
 }

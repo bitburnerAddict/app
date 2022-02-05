@@ -6,16 +6,15 @@
  * 
  */
 
-import * as search from "/bin/search.js";
-import * as hack from "/bin/hack.js"; 
-import * as messages from '/bin/messages.js';
-
-// Purchased Server naming convention
-let serverNamingPattern = 'pserv-';
+import * as search from "./bin/search";
+import * as hack from "./bin/hack"; 
+import * as messages from './bin/messages';
+import * as security from './bin/security';
+import * as appInterface from './bin/appInterface';
 
 /**
  * Bulk purchase servers
- * ==============================================
+ * 
  */
 export async function purchaseServers(ns) {
     let i = 0, 
@@ -23,31 +22,16 @@ export async function purchaseServers(ns) {
 
     while(i < ns.getPurchasedServerLimit()){
         if(ns.getServerMoneyAvailable('home') > ns.getPurchasedServerCost(ram)) {
-            let hostname = serverNamingPattern + i;
+            let hostname = appInterface.getServerPattern() + i;
             await purchase(ns, hostname, ram)					
             i++;
         }
     }
-
-}
-
-/**
- * Bulk remove servers
- * ==============================================
- */
-export async function remove(ns){
-    let servers = ns.scan('home');
-    servers.forEach((server) => {
-        if(!server.indexOf(serverNamingPattern)){
-            ns.tprint('Removing: ' + server);
-            ns.deleteServer(server);
-        }		
-    });
 }
 
 /**
  * Purchase a server and run script
- * ==============================================
+ * 
  */
 export async function purchase(ns, hostname, ram){
     let servers = ns.scan('home');
@@ -57,7 +41,7 @@ export async function purchase(ns, hostname, ram){
 
     try {
         hostname = ns.purchaseServer(hostname, ram);
-        await run(ns, hostname, '/scripts/hacks/early-hack-template.script');
+        await run(ns, hostname, appInterface.getScript());
         return true;
     } catch(err){
         ns.tprint(err);
@@ -65,10 +49,83 @@ export async function purchase(ns, hostname, ram){
 }
 
 /**
- * Run script on server
- * ==============================================
+ * Bulk remove servers
+ * 
  */
-export async function run(ns, server, script){
+ export async function remove(ns){
+    let servers = ns.scan('home');
+    servers.forEach((server) => {
+        if(!server.indexOf(appInterface.getServerPattern())){
+            ns.tprint('Removing: ' + server);
+            ns.deleteServer(server);
+        }		
+    });
+}
+
+/**
+ * Access servers
+ * 
+ */
+export async function access(ns) {
+    let servers = await search.main(ns);
+    for( let i = 0; i < servers.length; i++ ) {
+        await hack.run(servers[i], ns);
+    }
+}
+
+/**
+ * Find most efficient server to hack
+ * 
+ */
+export async function getTarget(ns){
+    let servers = await search.main(ns), efficency = {};
+
+    efficency.current   = 0;
+    efficency.highest   = 0;
+        
+    for( let i = 0; i < servers.length; i++ ) {
+        let data = await getEfficency(ns, servers[i]);        
+        
+        if(data.current > efficency.highest){
+            efficency.highest = data.current;
+            efficency.server = data.server;
+            efficency.money = data.money;
+        }
+    }
+
+    return efficency;
+}
+
+/**
+ * Get targetEfficency
+ * 
+ */
+export async function getEfficency(ns, server){
+
+    let efficency = {};
+
+    efficency.time          = {};
+    efficency.time.hack     = ns.getHackTime(server);
+    efficency.time.grow     = ns.getGrowTime(server);
+    efficency.time.weaken   = ns.getWeakenTime(server);
+    efficency.time.total    = efficency.time.hack + efficency.time.grow + efficency.time.weaken;
+    efficency.money         = ns.getServerMoneyAvailable(server)
+    efficency.server        = server;
+    efficency.current       = 0;
+    efficency.canHack       = await security.canHack(ns, ns.getServer(server));
+    
+    if(efficency.money > 0 && efficency.canHack) {
+        efficency.current   = Math.ceil(efficency.money / efficency.time.total);
+    }
+
+    return efficency;
+}
+
+/**
+ * Run script on server
+ * 
+ */
+ export async function run(ns, server, script){
     if(server && !ns.scriptRunning(script, server)){
         ns.tprint(server);			
         await ns.scp(script, server);
@@ -79,72 +136,6 @@ export async function run(ns, server, script){
     }
 }
 
-/**
- * Hack servers
- * ==============================================
- */
-export async function hackServers(ns) {
-    
-    let servers = await search.main(ns);
-    for( let i = 0; i < servers.length; i++ ) {
-        await hack.run(servers[i], ns);
-    }
-
-    //targetServer = await getTargetServer(ns);
-    //console.log(targetServer);
-}
-
-/**
- * Find most efficient server to hack
- * ==============================================
- */
-export async function getTargetServer(ns){
-    let servers = await search.main(ns),
-        efficencies = [],
-        target, 
-        server;
-        
-    for( let i = 0; i < servers.length; i++ ) {
-        let efficency = await getEfficency(ns, servers[i]);
-        efficencies.push(efficency[1]);
-
-        if(efficency[1] > Math.max(...efficencies)){
-            target = efficency[1];
-            server = servers[i];
-        } 
-    }
-
-    return [server, target];
-}
-
-/**
- * Get targetEfficency
- * ==============================================
- */
-export async function getEfficency(ns, server){
-
-    let hackTime		= ns.getHackTime(server),
-        growTime		= ns.getGrowTime(server),
-        weakenTime		= ns.getWeakenTime(server),
-        moneyAvailable 	= ns.getServerMoneyAvailable(server),
-        totalTime		= hackTime + growTime + weakenTime,
-        efficency		= Math.ceil(moneyAvailable / totalTime),
-        efficencyReturn = [];	
-
-    efficencyReturn[0] = server;
-    efficencyReturn[1] = 0;
-    efficencyReturn[2] = 0;
-    efficencyReturn[3] = totalTime;
-    
-    if(moneyAvailable > 0){
-        efficencyReturn[1] = efficency;
-        efficencyReturn[2] = moneyAvailable;
-        return efficencyReturn;
-    }
-
-    return efficencyReturn;
-
-}
 
 /** @param {NS} ns **/
 export async function main(ns) {
