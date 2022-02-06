@@ -1,66 +1,111 @@
 /**
  * app.js - Main Application
  * ==============================================
- * Choose from the following options:
- * 1. report
- * 2. hack
- * 3. stop
- * 4. start
- * 5. create
- * 6. purchase
+ * Hack all servers on the network (early game)
  * 
- * TODO's
- * ======
+ * Usage: 
+ * run app.js <report|hack|stop|start|generate|purchase|clean|upload> <late>
  * 
- * 1. Have specific options for early game
- *    a. Notes of hacking level required (50?)
- * 	  b. Notes to buy TOR Router
- *    c. Increase hacking level reminder
+ * Options: 
+ * hack 	- gain root, upload script and start
+ * stop 	- stop all scripts on network
+ * start 	- start all scrits on network
+ * generate - generate hack script with most efficienct server injected
+ * puchase  - purchase empty servers to run scripts on
+ * clean	- kill script across the network
+ * upload	- upload script across the network
  * 
- * 2. Write filemanager.js - for adding and removing remote files
- * 3. Once filemanger.js is complete, write function to 
- * 	  a. kill scripts
- *    b. remove script
- *    c. add new script
- *    d. run new script
+ * Notes: 
+ * - Adding "late" as a second argument runs the late game hacking script
+ *   that targets the most efficient server
  * 
- * 4. Create a function for running script locally to use 
- *    all local resources to attack a server
- * 5. Reminder how to increase local processing power - MAX OUT 
- *  
  */
 
 // Imports
-import * as report from './bin/report';
-import * as hack from './bin/hack'
-import * as pm from './bin/pm';
+import * as appInterface from './bin/appInterface';
+import * as filemanager from './bin/filemanager';
 import * as generator from './bin/generator';
+import * as hack from './bin/hack'
+import * as messages from './bin/messages';
+import * as pm from './bin/pm';
+import * as report from './bin/report';
+import * as resource from './bin/resource';
+import * as search from './bin/search';
 import * as servers from './bin/servers';
 
 /** @param {NS} ns **/
 export async function main(ns) {
 	
+	let script		= appInterface.getEarlyHackingScript();
+	let allServers 	= await search.main(ns);
+	let target 		= await servers.getTarget(ns, allServers);
+
+	// Pass "late" for late game script that finds the best
+	// server to hack, where as the early game script uses
+	// the template provided in the documentation
+	switch(ns.args[1]){
+		case "late":
+			script = appInterface.getDynamicScript();
+			await generator.hackScript(ns, target);
+			break;
+	}	
+
 	switch(ns.args[0]){
 		case "report":
-			await report.main(ns);
+			await report.main(ns, allServers);
+			await report.serverInfo(ns, allServers);
 			break;
+		case "nuke":
+			await hack.nuke(ns);
+			break;			
 		case "hack":
-			await hack.gainAccess(ns);
+			await hack.nuke(ns);
+			await filemanager.clean(ns, script);
+			await filemanager.upload(ns, script);
+			await pm.start(ns, script, allServers);
+			await ns.run(script, resource.calculateThreads(ns, 'home', script));
 			break;
+		case "persist":
+			while(true){			
+				let newTarget = await servers.getTarget(ns, allServers);
+				await servers.purchaseServers(ns, script);
+				if(newTarget !== target){
+					await generator.hackScript(ns, newTarget);
+					await filemanager.clean(ns, script);
+					await filemanager.upload(ns, script);
+				}
+				await pm.start(ns, script, allServers);
+				await ns.run(script, resource.calculateThreads(ns, 'home', script));
+				await ns.sleep(300000);
+			}	
+		case "distributed":
+			await hack.distributed(ns);
+			break;	
 		case "stop":
 			await pm.stop(ns);
 			break;	
 		case "start":
-			await pm.start(ns);
+			await pm.start(ns, script, allServers);
+			console.log(resource.calculateThreads(ns, 'home', script));
+			await ns.run(script, resource.calculateThreads(ns, 'home', script));
 			break;
-		case "create":
-			await generator.hackScript(ns, 'n00dles');
+		case "generate":
+			await generator.hackScript(ns, await servers.getTarget(ns, allServers));
 			break;			
 		case "purchase":			
-			await servers.purchaseServers(ns);
+			await servers.purchaseServers(ns, script);
+			break;
+		case "remove-servers":
+			await servers.remove(ns);
+			break;
+		case "clean":
+			await filemanager.clean(ns, script);
+			break;
+		case "upload":
+			await filemanager.upload(ns, script);
 			break;
 		default:
-			console.log('Default');
+			messages.log(ns, 'No options selected. Example: run app.js <report|hack|stop|start|generate|purchase|clean|upload> <late>');
 			break;
 	}
 	

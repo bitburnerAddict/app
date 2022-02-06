@@ -3,6 +3,8 @@
  * ==============================================
  */
 
+import * as resource from './bin/resource';
+
 /**
  * Check if we are able to hack a given server
  *  
@@ -10,13 +12,23 @@
  * @param {*} server 
  * @returns 
  */
-export async function canHack(ns, server){
-    let player  = ns.getPlayer();
-    if( player.hacking > server.requiredHackingSkill && 
-        server.numOpenPortsRequired <= server.openPortCount &&
-        server.hasAdminRights){
+export function canHack(ns, server){
+
+    let security = {};
+
+    security.server                 = server;
+    security.hackingLevel           = ns.getHackingLevel();
+    security.serverHackingLevel     = ns.getServerRequiredHackingLevel(server);
+    security.serverPortsRequired    = ns.getServerNumPortsRequired(server);
+    security.portsOpen              = resource.getNumberOfPortsAvailableToOpen(ns);
+    security.rootAccess             = ns.hasRootAccess(server);
+
+    if( security.hackingLevel > security.serverHackingLevel && 
+        security.serverPortsRequired <= security.portsOpen &&
+        security.rootAccess){
         return true;
     } 
+
     return false;
 }
 

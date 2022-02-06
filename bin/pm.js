@@ -3,17 +3,18 @@
  * ============================================== 
  */
 
-import * as appInterface from './bin/appInterface.js';
 import * as resource from './bin/resource.js';
-import * as search from './bin/search';
+import * as messages from './bin/messages';
+import * as security from './bin/security';
+import * as appInterface from './bin/appInterface';
 
 /**
- * Stop all running scripts on all servers
+ * Stop/Kill scripts on all servers
  *  
  * @param {NS} ns 
  */
-export async function stop(ns) {
-    let servers = await search.main(ns);
+export async function stop(ns, servers) {
+
     for( let i = 0; i < servers.length; i++ ) {
         await ns.killall(servers[i]);
     }
@@ -24,23 +25,36 @@ export async function stop(ns) {
  *  
  * @param {NS} ns 
  */
-export async function start(ns) {
-    let servers = await search.main(ns);
+export async function start(ns, script, servers) {
+    
     for( let i = 0; i < servers.length; i++ ) {
-        let threads = await resource.calculateThreads(ns, servers[i], appInterface.getScript());
-        if(threads > 0){
+        let threads = resource.calculateThreads(ns, servers[i], script);
+
+        try {
+            if(threads <= 0){
+                throw(messages.notEnoughThreads(servers[i]));
+            }
+            if(!ns.fileExists(script, servers[i])){
+                throw(messages.noScriptFoundOnHost(servers[i]));
+            }
+            if(!security.canHack(ns, servers[i]) && servers[i].indexOf(appInterface.getServerPattern()) < 0){
+               throw('ERROR: Unable to hack ' + servers[i] + ' - Hacking Level: ' + ns.getHackingLevel() +  '/' + ns.getServerRequiredHackingLevel(servers[i]));
+            }
+            if(ns.isRunning(script, servers[i])){
+                throw(messages.alreadyRunning(servers[i]));
+            }
             if(await ns.exec(
-                appInterface.getScript(), 
+                script, 
                 servers[i], 
                 threads
-                )){ 
-                    ns.tprint('SUCCESS: Running script on ' + servers[i]);
-                } else {
-                    ns.tprint('ERROR: Running script on ' + servers[i] + ', the script could already be running?');
-                }
+            )){
+                messages.log(ns, 'SUCCESS: Script run on ' + servers[i]);
+            } else {
+                messages.log(ns, 'ERROR: Running script on ' + servers[i]);
+            }
+        } catch(err) {
+            messages.log(ns, err);
         }
-
-
     }
 }
 

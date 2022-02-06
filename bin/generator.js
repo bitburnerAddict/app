@@ -20,7 +20,6 @@ export async function hackScript(ns, server) {
 
     await ns.rm(script);
     await ns.write(script, data);
-    console.log(ns.read(script));
 }
 
 /** @param {NS} ns **/

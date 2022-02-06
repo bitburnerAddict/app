@@ -5,38 +5,55 @@
 
 import * as resource from './bin/resource';
 import * as appInterface from './bin/appInterface';
+import * as security from './bin/security';
+import * as servers from './bin/servers';
+import * as time from './bin/time';
 
 /** @param {NS} ns **/
-export async function main(ns) {
+export async function main(ns, allServers) {
 
     let report = {};
 
     report.script               = appInterface.getScript();
     report.ramScript            = ns.getScriptRam(report.script);
     report.ramLocalTotal        = ns.getServerMaxRam('home');
-    report.ramLocalAvailable    = await resource.getAvailableServerRam(ns, 'home');
+    report.ramLocalAvailable    = resource.getAvailableServerRam(ns, 'home');
     report.hackingLevel         = ns.getHackingLevel();
-    report.timeSinceAugInstall  = secondsToDhms(ns.getTimeSinceLastAug() / 1000);
+    report.timeSinceAugInstall  = time.secondsToDhms(ns.getTimeSinceLastAug() / 1000);
+    report.mostEfficentServer   = await servers.getTarget(ns, allServers);
+    report.purchsedServerLimit  = ns.getPurchasedServerLimit();
 
     console.table(report);
-
+    
 }
 
-/**
- * Convert seconds to Days / Hours / Minutes / Seconds
- * @param {*} seconds 
- * @returns 
- */
-function secondsToDhms(seconds) {
-    seconds = Number(seconds);
-    var d = Math.floor(seconds / (3600*24));
-    var h = Math.floor(seconds % (3600*24) / 3600);
-    var m = Math.floor(seconds % 3600 / 60);
-    var s = Math.floor(seconds % 60);
+export async function serverInfo(ns, allServers) {
+
+    let reports = [];
+    let hackedServers = [];
+
+    for( let i = 0; i < allServers.length; i++ ) {
+        
+        let report = {};
+
+        report.server           = allServers[i];
+        report.hackingLevel     = ns.getServerRequiredHackingLevel(report.server);
+        report.securityLevel    = ns.getServerSecurityLevel(report.server);
+        report.canHack          = security.canHack(ns, report.server);        
+        report.securityMinLevel = ns.getServerMinSecurityLevel(report.server);
+        report.securityLevel    = ns.getServerSecurityLevel(report.server);
+
+        report.hasEarlyScriptRunning    = ns.isRunning(appInterface.getEarlyHackingScript(), report.server)
+        report.hasDynamicScriptRunning  = ns.isRunning(appInterface.getDynamicScript(), report.server)        
+
+        if(report.hasEarlyScriptRunning || report.hasDynamicScriptRunning){
+            hackedServers.push(report.server);
+        }
+
+        reports.push(report);
+
+    }
     
-    var dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
-    var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-    var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-    var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-    return dDisplay + hDisplay + mDisplay + sDisplay;
+    console.log("Total hacked servers: " + hackedServers.length + "/" + allServers.length);
+
 }

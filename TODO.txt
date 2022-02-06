@@ -1,0 +1,20 @@
+ * 
+ * TODO's
+ * ======
+ * 
+ * 1. Have specific options for early game
+ *    a. Notes of hacking level required (50?)
+ * 	  b. Notes to buy TOR Router
+ *    c. Increase hacking level reminder
+ * 
+ * 4. Create a function for running script locally to use 
+ *    all local resources to attack a server
+ 
+ * 5. Reminder how to increase local processing power - MAX OUT 
+
+ * 7. Get all the .cct files (contracts)
+
+
+- Write three seperate scripts so that you can multi-thread
+
+  Dedicate threads to each function w/g/h based on time for each step

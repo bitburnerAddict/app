@@ -63,7 +63,7 @@ export async function main(ns) {
 	all = all.filter(function (value, index, array) { 
 		return array.indexOf(value) === index;
 	});	
-
+	
 	// Return all servers
 	return all;
 
