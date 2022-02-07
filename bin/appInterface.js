@@ -5,20 +5,39 @@
  * 
  */
 
-let script                  = '/scripts/hacks/early-hack-template.script';
 let earlyHackingScript      = '/scripts/hacks/early-hack-template.script';
 let dynamicScript           = '/scripts/hacks/hack.script';
 let hackGrowWeakenScript    = '/scripts/hacks/hack-grow-weaken.js';
+let hack                    = '/scripts/hacks/hack.js';
+let grow                    = '/scripts/hacks/grow.js';
+let weakean                 = '/scripts/hacks/weaken.js';
 let serverNamingPattern     = 'pserv-';
 
 /**
- * Get script name 
+ * Get hack script name 
  * 
- * @deprecated;
  * @returns string
  */
-export function getScript(){
-    return script;
+ export function getHackScript(){
+    return hack;
+}
+
+/**
+ * Get grow script name 
+ * 
+ * @returns string
+ */
+ export function getGrowScript(){
+    return grow;
+}
+
+/**
+ * Get weakean script name 
+ * 
+ * @returns string
+ */
+ export function getWeakenScript(){
+    return weakean;
 }
 
 /**
@@ -44,7 +63,7 @@ export function getDynamicScript(){
  * 
  * @returns string
  */
-export function gethackGrowWeakenScript(){
+export function getHackGrowWeakenScript(){
     return hackGrowWeakenScript;
 }
 

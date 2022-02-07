@@ -14,6 +14,8 @@ import * as time from './bin/time';
 /**
  * Get Target server based on efficiency
  * 
+ * Grow time should be a factor... 
+ * 
  */
  export async function getTarget(ns, servers){
 

@@ -13,7 +13,7 @@ import * as appInterface from './bin/appInterface';
  */
 export async function hackScript(ns, server) {
     let script  = appInterface.getDynamicScript(),
-        src     = await ns.read(appInterface.getScript()),
+        src     = await ns.read(appInterface.getEarlyHackingScript()),
         data    = src.replace(
         /var target = "[a-zA-Z0-9_]+"/, 
         'var target = "'+ server +'"');

@@ -16,7 +16,7 @@ import * as pm from './bin/pm';
  * @param {*} file 
  */
 export async function main(ns, file, servers) {
-    await pm.stop(ns);
+    await pm.stop(ns, servers);
     for( let i = 0; i < servers.length; i++ ) {
         await ns.rm(file, servers[i]);
         messages.log(ns, messages.removedScripts(file, servers[i]));

@@ -24,6 +24,10 @@ export function calculateThreads(ns, server, script) {
     return Math.floor(getAvailableServerRam(ns, server) / ns.getScriptRam(script));
 }
 
+export function calculatePotentialThreads(ns, server, script) {
+    return Math.floor(ns.getServerMaxRam(server) / ns.getScriptRam(script));
+}
+
 /**
  * Check if all 5 port opening ports are available
  * 

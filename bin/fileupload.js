@@ -21,7 +21,8 @@ export async function main(ns, file, servers) {
                 await ns.scp(file, servers[i]);
                 messages.log(ns, messages.uploadedScripts(file, servers[i]));
             } else {
-                messages.log(ns, 'NOTICE: Skipping, file exists on ' + servers[i]);    
+                messages.log(ns, 'NOTICE: File exists on ' + servers[i] + ', uploading anyway');
+                await ns.scp(file, servers[i]);
             }
         } else {
             messages.log(ns, 'ERROR: File not found on home');

@@ -14,7 +14,7 @@ export async function main(ns, allServers) {
 
     let report = {};
 
-    report.script               = appInterface.getScript();
+    report.script               = appInterface.getEarlyHackingScript();
     report.ramScript            = ns.getScriptRam(report.script);
     report.ramLocalTotal        = ns.getServerMaxRam('home');
     report.ramLocalAvailable    = resource.getAvailableServerRam(ns, 'home');
