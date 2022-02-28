@@ -54,6 +54,57 @@ export async function serverInfo(ns, allServers) {
 
     }
     
+    console.log(reports);
     console.log("Total hacked servers: " + hackedServers.length + "/" + allServers.length);
+
+}
+
+export async function scriptInfo(ns, allServers) {
+
+    let report = {};
+
+    let host = 'max-hardware';
+
+    report.scripts = {}
+    report.scripts.ram = {}
+    report.time = {}
+    report.targets = {}
+    report.tests = {}
+
+    report.scripts.ram.hack = ns.getScriptRam('/scripts/hacks/hack.js', 'home');
+    report.scripts.ram.grow = ns.getScriptRam('/scripts/hacks/grow.js', 'home');
+    report.scripts.ram.weaken = ns.getScriptRam('/scripts/hacks/weaken.js',  'home');
+
+    report.time.hack = ns.getHackTime(host);
+    report.time.grow = ns.getGrowTime(host);    
+    report.time.weaken = ns.getWeakenTime(host);
+
+    let offset = 1000; // 1000ms gap between the 4 stages
+
+    // Hack, weaken, grow, weaken timings
+    report.targets.hackWeakenStart = offset;
+    report.targets.hackStart = (report.time.weaken - report.time.hack);
+    report.targets.growWeakenStart = (offset * 3);
+    report.targets.growStart = (report.time.weaken - report.time.grow) + (offset * 2);
+
+    // Tests
+    report.tests.a = report.targets.hackStart + report.time.hack;
+    report.tests.b = report.targets.hackWeakenStart + report.time.weaken;        
+    report.tests.c = report.targets.growStart + report.time.grow;
+    report.tests.d = report.targets.growWeakenStart + report.time.weaken;
+
+    // Formatting for console output
+    report.targets.hackStart = time.secondsToDhms(report.targets.hackStart / 1000);
+    report.targets.growStart = time.secondsToDhms(report.targets.growStart / 1000);
+    report.tests.a = time.secondsToDhms(report.tests.a / 1000);
+    report.tests.b = time.secondsToDhms(report.tests.b / 1000);
+    report.tests.c = time.secondsToDhms(report.tests.c / 1000);
+    report.tests.d = time.secondsToDhms(report.tests.d / 1000);
+    report.time.hack = time.secondsToDhms(report.time.hack / 1000);
+    report.time.grow = time.secondsToDhms(report.time.grow / 1000);
+    report.time.weaken = time.secondsToDhms(report.time.weaken / 1000);
+
+    console.log(report);
+    return report;
 
 }

@@ -54,8 +54,9 @@ export async function getEfficency(ns, server){
     efficency.canHack           = security.canHack(ns, server);
 
     if(
-        efficency.money > 0 && 
+        efficency.money > 5000000 && 
         efficency.canHack && 
+        efficency.time.weaken < 120000 && 
         efficency.time.total < 86400000
     ) {
         efficency.current   = Math.ceil(efficency.money / efficency.time.total);

@@ -57,12 +57,13 @@ export async function main(ns) {
 		case "report":
 			await report.main(ns, allServers);
 			await report.serverInfo(ns, allServers);
+			await report.scriptInfo(ns, allServers);
 			break;
 
 		// Nuke all of the available servers
 		case "nuke":
 			await hack.nuke(ns, allServers);
-			break;			
+			break;	
 		
 		// Hack all of the available servers
 		case "hack":
@@ -135,6 +136,7 @@ export async function main(ns) {
 			await filemanager.upload(ns, appInterface.getHackScript(), allServers);
 			await filemanager.upload(ns, appInterface.getGrowScript(), allServers);
 			await filemanager.upload(ns, appInterface.getWeakenScript(), allServers);
+			await filemanager.upload(ns, '/scripts/hacks/weaken-second.js', allServers);
 			break;
 		
 		default:

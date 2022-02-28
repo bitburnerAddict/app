@@ -10,11 +10,9 @@ import * as appInterface from './bin/appInterface';
 
 /**
  * Stop/Kill scripts on all servers
- *  
  * @param {NS} ns 
  */
 export async function stop(ns, servers) {
-
     for( let i = 0; i < servers.length; i++ ) {
         await ns.killall(servers[i]);
     }
@@ -22,7 +20,6 @@ export async function stop(ns, servers) {
 
 /**
  * Start all running scripts on all servers
- *  
  * @param {NS} ns 
  */
 export async function start(ns, script, servers) {

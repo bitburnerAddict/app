@@ -1,0 +1,13 @@
+Scratchpad 
+
+console.log('Allocating job: ' + job.strategyName + ' for ' + job.target);
+
+console.log('📈 SUCCESS: Found '+ foundWorker +' for ' + icon + job.target + ' (' + totalRunningProcessesFor + '/' + maxProcesses + ')');
+//ns.print('📈 SUCCESS: Found '+ foundWorker +' for ' + icon + job.target + ' (' + totalRunningProcessesFor + '/' + maxProcesses + ')');
+
+//ns.print('⚠️ ERROR: No server with ' + minRam + 'mb for job ' + job.strategyName + ' on ' + job.target);  
+
+ns.print('📈 INFO: Reached max proccesses for ' + icon + job.target + ' (' + totalRunningProcessesFor + '/' + maxProcesses + ')');
+
+                    //console.log(remainder, remainingRam, server.maxRam * 0.25, minRam, maxRam, multiple, server);
+                    //console.log(( remainingRam >= server.maxRam * 0.25 && remainingRam >= minRam && remainingRam <= maxRam && multiple) );

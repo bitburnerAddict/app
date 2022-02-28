@@ -15,6 +15,7 @@ import * as appInterface from './bin/appInterface';
 import * as hack from './bin/hack'
 import * as pm from './bin/pm';
 import * as fileupload from './bin/fileupload';
+import * as search from './bin/search';
 
 /** @param {NS} ns **/
 export async function main(ns) {	
